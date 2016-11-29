@@ -5,7 +5,6 @@ class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
   CONST CHARSET = 'iso-8859-1';
 
   protected $_mode = NULL;
-
   protected $_params = array();
 
   /**
@@ -79,14 +78,13 @@ class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
     $qfKey = $params['qfKey'];
     $parsed_url = parse_url($params['entryURL']);
     $url_path = substr($parsed_url['path'], 1);
-    $params['stripe_error_url'] = $error_url = CRM_Utils_System::url(
+    $error_url = CRM_Utils_System::url(
       $url_path,
       $parsed_url['query'] . "&_qf_Main_display=1&qfKey={$qfKey}",
       FALSE, NULL, FALSE
     );
 
     $requestArray = $this->formRequestArray($params);
-    $error_url = CRM_Utils_System::url($url_path, $parsed_url['query'] . "&_qf_Main_display=1&qfKey={$qfKey}", FALSE, NULL, FALSE);
 
     try {
       $result = Braintree_Transaction::sale($requestArray);
@@ -94,23 +92,21 @@ class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
       CRM_Core_Error::statusBounce("Oops! Looks like there was problem. Payment Response: <br />" . $e->getMessage(), $error_url);
     }
     
-	if ($result->success) {
+    if ($result->success) {
       $params['trxn_id'] = $result->transaction->id;
       $params['gross_amount'] = $result->transaction->amount;
-	} 
-	else if ($result->transaction) {
-      $errormsg = 'Transactions is not approved';
-      CRM_Core_Error::statusBounce("Oops!  Looks like there was problem.  Payment Response: <br /> {$result->transaction->processorResponseCode}: {$result->message}", $error_url);
-
+    } 
+    else if ($result->transaction) {
+      CRM_Core_Error::statusBounce("Oops! Looks like there was problem. Payment Response: <br />{$result->transaction->processorResponseCode}: {$result->message}", $error_url);
       return self::error($result->transaction->processorResponseCode, $result->message);
-	} 
-	else {
+    } 
+    else {
       $error = "Validation errors:<br/>";
       foreach ($result->errors->deepAll() as $e) {
         $error .= $e->message;
       }
       return self::error(9001, $error);
-	}
+    }
 
     return $params;
   }
@@ -145,7 +141,7 @@ class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
     }
 
     if (empty($this->_paymentProcessor['signature'])) {
-      $error[] = ts('Signature is not set for this payment processor');
+      $error[] = ts('Private Key is not set for this payment processor');
     }
 
     if (!empty($error)) {
@@ -170,6 +166,9 @@ class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
         'expirationYear'   => $postArray['credit_card_exp_date']['Y'],
         'cvv'              => $postArray['cvv2']
       ),
+      'options' => array(
+        'submitForSettlement' => TRUE,
+      ),
     );
 
     // Allow usage of a merchant account ID (for charging in other currencies) - see README.md
@@ -183,20 +182,23 @@ class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
         'lastName'  => $postArray['last_name']
       );
 
-      if (array_key_exists('email-5',$postArray)) {
-        $requestArray['customer']['email'] = $postArray['email-5'];
+      // Different versions of CiviCRM have different field names for the email address
+      foreach (array('email-5', 'email-Primary') as $field) {
+        if (array_key_exists($field, $postArray)) {
+          $requestArray['customer']['email'] = $postArray[$field];
+        }
       }
     }
   
     if (array_key_exists('billing_first_name',$postArray)) {
-	  $requestArray['billing'] = array(
+      $requestArray['billing'] = array(
         'firstName'         => $postArray['billing_first_name'],
-		'lastName'          => $postArray['billing_last_name'],
-		'streetAddress'     => $postArray['billing_street_address-5'],
-		'locality' 	        => $postArray['billing_city-5'],
-		'region'            => $postArray['billing_state_province-5'],
-		'postalCode'        => $postArray['billing_state_province-5'],
-		'countryCodeAlpha2' => $postArray['billing_country-5']
+        'lastName'          => $postArray['billing_last_name'],
+        'streetAddress'     => $postArray['billing_street_address-5'],
+        'locality' 	        => $postArray['billing_city-5'],
+        'region'            => $postArray['billing_state_province-5'],
+        'postalCode'        => $postArray['billing_state_province-5'],
+        'countryCodeAlpha2' => $postArray['billing_country-5']
       );
     }
 
