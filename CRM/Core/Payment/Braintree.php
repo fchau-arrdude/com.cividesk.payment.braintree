@@ -91,7 +91,7 @@ class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
     try {
       $result = Braintree_Transaction::sale($requestArray);
     } catch(Exception $e) {
-      CRM_Core_Error::statusBounce("Oops! Looks like there was problem.  Payment Response:  <br /> {$e->message}", $error_url);
+      CRM_Core_Error::statusBounce("Oops! Looks like there was problem. Payment Response: <br />" . $e->getMessage(), $error_url);
     }
     
 	if ($result->success) {
