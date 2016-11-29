@@ -1,5 +1,5 @@
 <?php
-require_once 'packages/braintree_php/lib/Braintree.php';
+require_once 'vendor/braintree/braintree_php/lib/Braintree.php';
 
 class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
   CONST CHARSET = 'iso-8859-1';
