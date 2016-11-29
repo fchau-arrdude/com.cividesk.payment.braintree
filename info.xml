@@ -1,18 +1,29 @@
-<?xml version="1.0"?>
-<extension key="com.paymentprocessor.braintree" type="module">
+<?xml version="2.0"?>
+<extension key="com.cividesk.payment.braintree" type="payment">
   <file>braintree</file>
   <name>Braintree</name>
   <description>Braintree Payment Processor</description>
-  <license>AGPL</license>
+  <license>AGPL v3</license>
+  <urls>
+    <url desc="Documentation">https://github.com/cividesk/com.cividesk.payment.braintree</url>
+    <url desc="Support">https://github.com/cividesk/com.cividesk.payment.braintree/issues</url>
+  </urls>
+  <downloadUrl>https://github.com/cividesk/com.cividesk.payment.braintree/archive/master.zip</downloadUrl>
   <maintainer>
-    <author>Vivek Arora</author>
-    <email>vivek.arora@thetigroup.com</email>
+    <author>Nicolas Ganivet</author>
+    <email>nicolas@cividesk.com</email>
   </maintainer>
-  <releaseDate>2013-08-01</releaseDate>
-  <version>1.0</version>
-  <develStage>Devlopment</develStage>
+  <releaseDate>2016-11-30</releaseDate>
+  <version>2.0</version>
+  <develStage>stable</develStage>
   <compatibility>
     <ver>4.2</ver>
     <ver>4.3</ver>
+    <ver>4.4</ver>
+    <ver>4.5</ver>
+    <ver>4.6</ver>
   </compatibility>
+  <civix>
+    <namespace>CRM/Braintree</namespace>
+  </civix>
 </extension>
