@@ -28,7 +28,7 @@ class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
     $this->_mode = $mode;
     $this->_paymentProcessor = $paymentProcessor;
     $this->_processorName = ts('Braintree');
-    $environment =  ($mode == "test") ? 'sandbox':'sandbox';
+    $environment = ($mode == "test" ? 'sandbox' : 'production');
 
     Braintree_Configuration::environment($environment);
     Braintree_Configuration::merchantId($paymentProcessor["user_name"]);
@@ -70,7 +70,7 @@ class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
    */
   function doDirectPayment(&$params) {
 
-  // Let a $0 transaction pass.
+    // Let a $0 transaction pass
     if (empty($params['amount']) || $params['amount'] == 0) {
       return $params;
     }
@@ -79,45 +79,43 @@ class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
     $qfKey = $params['qfKey'];
     $parsed_url = parse_url($params['entryURL']);
     $url_path = substr($parsed_url['path'], 1);
-    $params['stripe_error_url'] = $error_url = CRM_Utils_System::url($url_path,
-      $parsed_url['query'] . "&_qf_Main_display=1&qfKey={$qfKey}", FALSE, NULL, FALSE);
-
+    $params['stripe_error_url'] = $error_url = CRM_Utils_System::url(
+      $url_path,
+      $parsed_url['query'] . "&_qf_Main_display=1&qfKey={$qfKey}",
+      FALSE, NULL, FALSE
+    );
 
     $requestArray = $this->formRequestArray($params);
     $error_url = CRM_Utils_System::url($url_path, $parsed_url['query'] . "&_qf_Main_display=1&qfKey={$qfKey}", FALSE, NULL, FALSE);
 
-    try  {
-       $result = Braintree_Transaction::sale($requestArray);
-       }
-   
-  catch(Exception $e) {
-        CRM_Core_Error::statusBounce("Oops! Looks like there was problem.  Payment Response:  <br /> {$e->message}", $error_url); 
-   }
+    try {
+      $result = Braintree_Transaction::sale($requestArray);
+    } catch(Exception $e) {
+      CRM_Core_Error::statusBounce("Oops! Looks like there was problem.  Payment Response:  <br /> {$e->message}", $error_url);
+    }
     
 	if ($result->success) {
-	    $params['trxn_id'] = $result->transaction->id;
-	    $params['gross_amount'] = $result->transaction->amount;
+      $params['trxn_id'] = $result->transaction->id;
+      $params['gross_amount'] = $result->transaction->amount;
 	} 
 	else if ($result->transaction) {
-	    $errormsg = 'Transactions is not approved';
-	    CRM_Core_Error::statusBounce("Oops!  Looks like there was problem.  Payment Response: <br /> {$result->transaction->processorResponseCode}: {$result->message}", $error_url);
-       
-	    return self::error($result->transaction->processorResponseCode, $result->message);
+      $errormsg = 'Transactions is not approved';
+      CRM_Core_Error::statusBounce("Oops!  Looks like there was problem.  Payment Response: <br /> {$result->transaction->processorResponseCode}: {$result->message}", $error_url);
+
+      return self::error($result->transaction->processorResponseCode, $result->message);
 	} 
 	else {
-	    $error = "Validation errors:<br/>";
-	    foreach (($result->errors->deepAll()) as $e) {
-		$error.= $e->message;
-	     }
-  
-	    return self::error(9001, $error);
-	 }
+      $error = "Validation errors:<br/>";
+      foreach ($result->errors->deepAll() as $e) {
+        $error .= $e->message;
+      }
+      return self::error(9001, $error);
+	}
 
     return $params;
   }
 
   function &error($errorCode = NULL, $errorMessage = NULL) {
-
     $e = CRM_Core_Error::singleton();
 
     if ($errorCode) {
@@ -126,7 +124,6 @@ class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
     else {
       $e->push(9001, 0, NULL, 'Unknown System Error.');
     }
-
     return $e;
   }
 
@@ -137,76 +134,73 @@ class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
    * @public
    */
   function checkConfig() {
-        $error = array();
+    $error = array();
 
-        if (empty($this->_paymentProcessor['user_name'])) {
-            $error[] = ts('Merchant Id is not set for this payment processor');
-        }
+    if (empty($this->_paymentProcessor['user_name'])) {
+      $error[] = ts('Merchant Id is not set for this payment processor');
+    }
 
-        if (empty($this->_paymentProcessor['password'])) {
-            $error[] = ts('Public Key is not set for this payment processor');
-        }
+    if (empty($this->_paymentProcessor['password'])) {
+      $error[] = ts('Public Key is not set for this payment processor');
+    }
 
-        if (empty($this->_paymentProcessor['signature'])) {
-            $error[] = ts('Signature is not set for this payment processor');
-        }
+    if (empty($this->_paymentProcessor['signature'])) {
+      $error[] = ts('Signature is not set for this payment processor');
+    }
 
-
-        if (empty($this->_paymentProcessor['subject'])) {
-            $error[] = ts('subject/merchant account id is not set for this payment processor');
-        }
-
-
-        if (!empty($error)) {
-            return implode('<p>', $error);
-        } else {
-            return NULL;
-        }
-
+    if (!empty($error)) {
+      return implode('<p>', $error);
+    } else {
+      return NULL;
+    }
   }
-/*
-*   This function returns the request array
-*   @param  array $params assoc array of input parameters for this transaction
-*   @return Array 
-*/
+
+  /*
+   *   This function returns the request array
+   *   @param  array $params assoc array of input parameters for this transaction
+   *   @return Array
+   */
   function formRequestArray($postArray){
 
-//return implode('<p>', $postArray['credit_card_exp_date']['M']."/".$postArray['credit_card_exp_date']['Y'] );
+    $requestArray = array(
+      'amount'          => $postArray['amount'],
+      'creditCard'      => array(
+        'number'           => $postArray['credit_card_number'],
+        'expirationMonth'  => $postArray['credit_card_exp_date']['M'],
+        'expirationYear'   => $postArray['credit_card_exp_date']['Y'],
+        'cvv'              => $postArray['cvv2']
+      ),
+    );
 
+    // Allow usage of a merchant account ID (for charging in other currencies) - see README.md
+    if (!empty($this->_paymentProcessor['subject'])) {
+      $requestArray['merchantAccountId'] = $this->_paymentProcessor['subject'];
+    }
 
-          $requestArray = array('amount'     => $postArray['amount'],
-			//	'cardholder_name' =>  $postArray['billing_first_name']." ".$postArray['billing_last_name'],
-				'merchantAccountId' => $this->_paymentProcessor['subject'],
-				'serviceFeeAmount' => "3.00",
-				'paymentMethodNonce' => 'nonce-from-the-client',
-                                'creditCard' => array('number'         => $postArray['credit_card_number'],
-				    		      'expirationMonth' => $postArray['credit_card_exp_date']['M'],
-						       'expirationYear' => $postArray['credit_card_exp_date']['Y'],
-				                      'cvv'            => $postArray['cvv2'])
-				);
+    if (array_key_exists('first_name',$postArray)){
+      $requestArray['customer'] = array(
+        'firstName' => $postArray['first_name'],
+        'lastName'  => $postArray['last_name']
+      );
 
-      if(array_key_exists('first_name',$postArray)){
-	  $requestArray['customer'] = array('firstName' => $postArray['first_name'],
-	    				    'lastName'  => $postArray['last_name']
-	                                   );
-           if(array_key_exists('email-5',$postArray)){ 
-                    $requestArray['customer']['email'] = $postArray['email-5'];
-           }
+      if (array_key_exists('email-5',$postArray)) {
+        $requestArray['customer']['email'] = $postArray['email-5'];
       }
+    }
   
-       if(array_key_exists('billing_first_name',$postArray)){
-	  $requestArray['billing'] = array('firstName'         => $postArray['billing_first_name'],
-					   'lastName'          => $postArray['billing_last_name'],
-					   'streetAddress'     => $postArray['billing_street_address-5'],
-					   'locality' 	       => $postArray['billing_city-5'],
-					   'region'            => $postArray['billing_state_province-5'],
-					   'postalCode'        => $postArray['billing_state_province-5'],
-					   'countryCodeAlpha2' => $postArray['billing_country-5']
-					  );
-        } 
+    if (array_key_exists('billing_first_name',$postArray)) {
+	  $requestArray['billing'] = array(
+        'firstName'         => $postArray['billing_first_name'],
+		'lastName'          => $postArray['billing_last_name'],
+		'streetAddress'     => $postArray['billing_street_address-5'],
+		'locality' 	        => $postArray['billing_city-5'],
+		'region'            => $postArray['billing_state_province-5'],
+		'postalCode'        => $postArray['billing_state_province-5'],
+		'countryCodeAlpha2' => $postArray['billing_country-5']
+      );
+    }
 
     return $requestArray;
   }
 
 }
-
