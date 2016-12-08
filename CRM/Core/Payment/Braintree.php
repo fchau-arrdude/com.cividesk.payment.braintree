@@ -183,8 +183,10 @@ class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
       );
 
       // Different versions of CiviCRM have different field names for the email address
-      foreach (array('email-5', 'email-Primary') as $field) {
-        if (array_key_exists($field, $postArray)) {
+      // Fields are ordered in order of preference ; email-5 is Billing
+      $fields = array('email-5', 'email-Primary');
+      foreach (array_reverse($fields) as $field) {
+        if (!empty($postArray[$field])) {
           $requestArray['customer']['email'] = $postArray[$field];
         }
       }

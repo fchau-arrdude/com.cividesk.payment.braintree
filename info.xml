@@ -1,5 +1,5 @@
 <?xml version="2.0"?>
-<extension key="com.cividesk.payment.braintree" type="payment">
+<extension key="com.cividesk.payment.braintree" type="module">
   <file>braintree</file>
   <name>Braintree</name>
   <description>Braintree Payment Processor</description>
