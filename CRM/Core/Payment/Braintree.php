@@ -88,16 +88,15 @@ class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
 
     try {
       $result = Braintree_Transaction::sale($requestArray);
-    } catch(Exception $e) {
-      CRM_Core_Error::statusBounce("Oops! Looks like there was problem. Payment Response: <br />" . $e->getMessage(), $error_url);
+    } catch (Exception $e) {
+      return self::error("Oops! Looks like there was problem. Payment Response: " . $e->getMessage());
     }
-    
+
     if ($result->success) {
       $params['trxn_id'] = $result->transaction->id;
       $params['gross_amount'] = $result->transaction->amount;
     } 
     else if ($result->transaction) {
-      CRM_Core_Error::statusBounce("Oops! Looks like there was problem. Payment Response: <br />{$result->transaction->processorResponseCode}: {$result->message}", $error_url);
       return self::error($result->transaction->processorResponseCode, $result->message);
     } 
     else {
@@ -197,9 +196,9 @@ class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
         'firstName'         => $postArray['billing_first_name'],
         'lastName'          => $postArray['billing_last_name'],
         'streetAddress'     => $postArray['billing_street_address-5'],
-        'locality' 	        => $postArray['billing_city-5'],
+        'locality'          => $postArray['billing_city-5'],
         'region'            => $postArray['billing_state_province-5'],
-        'postalCode'        => $postArray['billing_state_province-5'],
+        'postalCode'        => $postArray['billing_postal_code-5'],
         'countryCodeAlpha2' => $postArray['billing_country-5']
       );
     }
