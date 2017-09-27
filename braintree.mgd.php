@@ -3,7 +3,7 @@
 return array( 
      0 => 
   array (
-    'module' => 'com.paymentprocessor.braintree',
+    'module' => 'com.cividesk.payment.braintree',
     'name' => 'braintree',
     'entity' => 'PaymentProcessorType',
     'params' => array(

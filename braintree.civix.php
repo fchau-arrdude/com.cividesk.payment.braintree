@@ -123,7 +123,7 @@ function _braintree_civix_civicrm_managed(&$entities) {
     $es = include $file;
     foreach ($es as $e) {
       if (empty($e['module'])) {
-        $e['module'] = 'com.paymentprocessor.braintree';
+        $e['module'] = 'com.cividesk.payment.braintree';
       }
       $entities[] = $e;
     }

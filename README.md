@@ -48,9 +48,9 @@ If you are processing payment in multiple currencies, you can create additional 
 Developers can run the test suite as such:
 
 1. Go to the tests folder of the extention.
-2. Copy All files inside the com.paymentprocessor.braintree/tests/phpunit/WebTest/Cotribute and paste it in civicrm(Your Civicrm module directory)/tests/phpunit/WebTest/Contribute
-3. Copy All files inside the com.paymentprocessor.braintree/tests/phpunit/WebTest/Event and paste it in civicrm(Your Civicrm module directory)/tests/phpunit/WebTest/Event  
-4. Copy All files inside the com.paymentprocessor.braintree/tests/phpunit/WebTest/Member and paste it in civicrm(Your Civicrm module directory)/tests/phpunit/WebTest/Member   
+2. Copy All files inside the com.cividesk.payment.braintree/tests/phpunit/WebTest/Cotribute and paste it in civicrm(Your Civicrm module directory)/tests/phpunit/WebTest/Contribute
+3. Copy All files inside the com.cividesk.payment.braintree/tests/phpunit/WebTest/Event and paste it in civicrm(Your Civicrm module directory)/tests/phpunit/WebTest/Event
+4. Copy All files inside the com.cividesk.payment.braintree/tests/phpunit/WebTest/Member and paste it in civicrm(Your Civicrm module directory)/tests/phpunit/WebTest/Member
 5. cd path/to/civicrm/packages/SeleniumRC 
 6. sh selenium.sh
 
