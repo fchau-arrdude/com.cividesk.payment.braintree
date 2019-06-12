@@ -85,7 +85,23 @@ class CRM_Core_Payment_Braintree extends CRM_Core_Payment {
     );
 
     $requestArray = $this->formRequestArray($params);
+    if (empty(Braintree_Configuration::environment())) {
+      $environment = ($this->_mode == "test" ? 'sandbox' : 'production');
+      Braintree_Configuration::environment($environment);
+    }
 
+    if (empty(Braintree_Configuration::merchantId())) {
+      Braintree_Configuration::merchantId($this->_paymentProcessor["user_name"]);
+    }
+
+    if (empty(Braintree_Configuration::publicKey())) {
+      Braintree_Configuration::publicKey($this->_paymentProcessor["password"]);
+    }
+
+    if (empty(Braintree_Configuration::privateKey())) {
+      Braintree_Configuration::privateKey($this->_paymentProcessor["signature"]);
+    }
+    
     try {
       $result = Braintree_Transaction::sale($requestArray);
     } catch (Exception $e) {
